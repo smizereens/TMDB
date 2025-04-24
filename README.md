@@ -17,12 +17,13 @@
 
 1.  **Клонируйте репозиторий (если применимо):**
     ```bash
-    git clone <URL_репозитория>
-    cd <папка_репозитория>
+    git clone https://github.com/smizereens/TMDB.git
     ```
 
 2.  **Создайте и активируйте виртуальное окружение:**
     ```bash
+    python -m venv venv
+
     # Windows (Command Prompt)
     python -m venv venv
     venv\Scripts\activate

@@ -1,39 +1,39 @@
 import logging
 import os
-import asyncio # Import asyncio for gather
+import asyncio # Импорт asyncio для gather
 from dotenv import load_dotenv
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler # Import CallbackQueryHandler
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler # Импорт CallbackQueryHandler
 
-# Import handlers from bot_logic
+# Импорт обработчиков из bot_logic
 import bot_logic
 
-# Configure logging
+# Настройка логирования
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
-# set higher logging level for httpx to avoid all GET and POST requests being logged
+# Установка более высокого уровня логирования для httpx, чтобы избежать логирования всех GET и POST запросов
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 def main() -> None:
-    """Start the bot."""
-    # Load environment variables from .env file
+    """Запускает бота."""
+    # Загрузка переменных окружения из файла .env
     load_dotenv()
     TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-    TMDB_API_KEY = os.getenv('TMDB_API_KEY') # Load TMDB key to check if it exists
+    TMDB_API_KEY = os.getenv('TMDB_API_KEY') # Загружаем ключ TMDB для проверки его наличия
 
     if not TELEGRAM_TOKEN:
-        logger.error("TELEGRAM_BOT_TOKEN not found in environment variables. Exiting.")
+        logger.error("TELEGRAM_BOT_TOKEN не найден в переменных окружения. Выход.")
         return
     if not TMDB_API_KEY:
-        logger.error("TMDB_API_KEY not found in environment variables. Check .env file, but continuing...")
-        # Allow continuing but API calls will fail
+        logger.error("TMDB_API_KEY не найден в переменных окружения. Проверьте файл .env, но продолжаем...")
+        # Разрешаем продолжение, но вызовы API будут неудачными
 
-    # Create the Application and pass it your bot's token.
+    # Создание Application и передача токена вашего бота.
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
-    # --- Register Handlers ---
-    # Basic commands
+    # --- Регистрация обработчиков ---
+    # Основные команды
     application.add_handler(CommandHandler("start", bot_logic.start))
     application.add_handler(CommandHandler("help", bot_logic.help_command))
     application.add_handler(CommandHandler("search", bot_logic.search_command))
@@ -41,34 +41,34 @@ def main() -> None:
     application.add_handler(CommandHandler("toprated", bot_logic.toprated_command))
     application.add_handler(CommandHandler("upcoming", bot_logic.upcoming_command))
 
-    # --- Conversation Handlers ---
+    # --- Обработчики диалогов ---
     application.add_handler(bot_logic.discover_conv_handler)
-    application.add_handler(bot_logic.search_conv_handler) # Add search conversation
+    application.add_handler(bot_logic.search_conv_handler) # Добавляем диалог поиска
 
-    # --- Callback Query Handlers ---
-    application.add_handler(bot_logic.pagination_handler) # Handles next/prev buttons
+    # --- Обработчики Callback Query ---
+    application.add_handler(bot_logic.pagination_handler) # Обрабатывает кнопки next/prev
 
-    # --- Message Handlers for Buttons ---
-    # These should be added after CommandHandlers and ConversationHandlers
-    # to allow commands like /start to take precedence over button text
+    # --- Обработчики сообщений для кнопок ---
+    # Их следует добавлять после CommandHandlers и ConversationHandlers,
+    # чтобы команды вроде /start имели приоритет над текстом кнопок
     application.add_handler(bot_logic.popular_button_handler)
     application.add_handler(bot_logic.toprated_button_handler)
     application.add_handler(bot_logic.upcoming_button_handler)
     application.add_handler(bot_logic.help_button_handler)
 
-    # Note: The cancel command is registered within the ConversationHandler's fallbacks
+    # Примечание: команда cancel зарегистрирована в fallbacks ConversationHandler
 
-    logger.info("Bot handlers registered.")
+    logger.info("Обработчики бота зарегистрированы.")
 
-    # Run the bot until the user presses Ctrl-C
-    logger.info("Starting bot polling...")
-    # Pre-load caches before starting polling (optional, but good practice)
-    # asyncio.run(bot_logic.ensure_api_config_cached()) # Already called in start handler
-    # asyncio.run(bot_logic.ensure_genres_cached()) # Already called in start handler
+    # Запуск бота до нажатия Ctrl-C
+    logger.info("Запуск опроса бота...")
+    # Предварительная загрузка кэшей перед запуском опроса (опционально, но хорошая практика)
+    # asyncio.run(bot_logic.ensure_api_config_cached()) # Уже вызывается в обработчике start
+    # asyncio.run(bot_logic.ensure_genres_cached()) # Уже вызывается в обработчике start
     application.run_polling()
-    logger.info("Bot stopped.")
+    logger.info("Бот остановлен.")
 
 if __name__ == "__main__":
-    # Use asyncio.run() if your top-level functions are async
-    # For run_polling, it's synchronous at the top level.
+    # Используйте asyncio.run(), если ваши функции верхнего уровня асинхронны
+    # Для run_polling, она синхронна на верхнем уровне.
     main()
