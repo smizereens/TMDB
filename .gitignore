@@ -1,0 +1,22 @@
+# Environment variables
+.env
+
+# Schema file
+openapi-schema.yml
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE/Editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
